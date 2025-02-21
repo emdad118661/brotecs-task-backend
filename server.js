@@ -11,26 +11,23 @@ app.use(cors());
 app.use(express.json());
 
 let db;
-MongoClient.connect(MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true })
-  .then(client => {
-    db = client.db("employeeData"); // Database Name
-    console.log("Connected to MongoDB");
-  })
-  .catch(error => console.error(error));
-
-/* 
-CRUD OPERATIONS
-*/
+const connectDB = async () => {
+  const client = new MongoClient(MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true });
+  await client.connect();
+  return client.db("employeeData"); // Return the database instance
+};
 
 // Get all employees
 app.get("/employees", async (req, res) => {
   try {
+    const db = await connectDB();
     const employees = await db.collection("employees").find().toArray();
     res.json(employees);
   } catch (error) {
     res.status(500).json({ error: "Failed to fetch employees" });
   }
 });
+
 
 // Get specific employee by ID
 app.get("/employees/:id", async (req, res) => {
